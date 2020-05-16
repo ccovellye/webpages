@@ -61,7 +61,7 @@ var app = new Vue({
             })
             gridClient.on('change', function() {
                 viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height);
-                viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y);
+                viewer.shift(gridClient.currentGrid.pose.position.x*2, gridClient.currentGrid.pose.position.y*2);
             })
             var robotMarker = new ROS2D.NavigationArrow({
                 size: 12,
@@ -109,6 +109,13 @@ var app = new Vue({
                 messageType: 'geometry_msgs/PoseStamped'
             })
         },
+        setTopic3: function() {
+            this.topic3 = new ROSLIB.Topic({
+                ros: this.ros,
+                name: 'move_base/status',
+                messageType: 'actionlib_msgs/GoalStatusArray'
+            })
+        },
         send: function() {
             this.message2 = new ROSLIB.Message({
                 header: {
@@ -121,6 +128,12 @@ var app = new Vue({
             })
             this.setTopic2()
             this.topic2.publish(this.message2)
+            this.setTopic3()
+            topic3.subscribe(function(GoalStatusArray){
+                if (text = "Goal reached."){
+                   window.alert("El robot ha llegado a su destino. Por favor presione el botón Origin para regresarlo a su lugar.") 
+                }
+            })
         },
         forward: function() {
             this.message = new ROSLIB.Message({
@@ -129,6 +142,11 @@ var app = new Vue({
             })
             this.setTopic()
             this.topic.publish(this.message)
+            this.topic3.subscribe(function(GoalStatusArray){
+                if (text = "Goal reached."){
+                   window.alert("El robot ha llegado a su destino. Por favor presione el botón Origin para regresarlo a su lugar.") 
+                }
+            })
         },
         stop: function() {
             this.message = new ROSLIB.Message({

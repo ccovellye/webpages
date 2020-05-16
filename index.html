@@ -55,7 +55,7 @@
 
             <!-- 1st row -->
             <div class="col-md-12 text-center">
-                <button v-longclick="forward" class="btn btn-primary" :disabled="loading || !connected" >Origin</button>
+                <button @click="forward" class="btn btn-primary" :disabled="loading || !connected" >forward</button>
                 <br><br>
             </div>
 
