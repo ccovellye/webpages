@@ -51,8 +51,8 @@ var app = new Vue({
             })
             var viewer = new ROS2D.Viewer({
                 divID : 'map',
-                width : 400,
-                height : 300  
+                width : 600,
+                height : 600  
             })
             var gridClient = new ROS2D.OccupancyGridClient({
                 ros: this.ros,
@@ -61,35 +61,21 @@ var app = new Vue({
             })
             gridClient.on('change', function() {
                 viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height);
-                viewer.shift(gridClient.currentGrid.pose.position.x*2, gridClient.currentGrid.pose.position.y*2);
+                viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y);
             })
             var robotMarker = new ROS2D.NavigationArrow({
-                size: 12,
-                strokeSize: 1,
-                fillColor: createjs.Graphics.getRGB(255, 128, 0, 0.66),
+                size: 0.08,
+                strokeSize: 0.008,
+               // fillColor: createjs.Graphics.getRGB(255, 128, 0, 0.66),
                 pulse: true
             })
-            robotMarker.visible = false
-            gridClient.rootObject.addChild(robotMarker)
-            var initScaleSet = false
-            var poseListener = new ROSLIB.Topic({
-                ros : this.ros,
-                name : '/robot_pose',
-                messageType : 'geometry_msgs/Pose',
-                throttle_rate : 100
-              })
-            
-            poseListener.subscribe(function(pose) {
+            poseTopic.subscribe(function(pose) {
                 robotMarker.x = pose.position.x,
                 robotMarker.y = -pose.position.y
-                if (!initScaleSet) {
-                    robotMarker.scaleX = 1.0 / viewer.scene.scaleX
-                    robotMarker.scaleY = 1.0 / viewer.scene.scaleY
-                    initScaleSet = true
-                }
-                robotMarker.rotation = viewer.scene.rosQuaternionToGlobalTheta(pose.orientation)
-                robotMarker.visible = true
             })
+            
+            gridClient.rootObject.addChild(robotMarker)
+
 
         },
         disconnect: function() {
