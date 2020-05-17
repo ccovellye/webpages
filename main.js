@@ -46,9 +46,20 @@ var app = new Vue({
                 name: '/robot_pose',
                 messageType: 'geometry_msgs/Pose'
             })
-            poseTopic.subscribe(function(pose){
-                console.log(pose)
-            })
+            poseTopic.subscribe(function(message) {
+                console.log('In pose subscribe callback')
+                var now = new Date()
+                var position = 'x: ' + message.position.x
+                    + ', y: ' + message.position.y
+                    + ', z: 0.0'
+                var orientation = 'x: ' + message.orientation.x
+                    + ', y: ' + message.orientation.y
+                    + ', z: ' + message.orientation.z
+                    + ', w: ' + message.orientation.w
+                })
+           // poseTopic.subscribe(function(pose){
+             //   console.log(pose)
+            //})
             var viewer = new ROS2D.Viewer({
                 divID : 'map',
                 width : 600,
@@ -60,22 +71,45 @@ var app = new Vue({
                 continuous: true
             })
             gridClient.on('change', function() {
-                viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height);
-                viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y);
+                viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height)
+                viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y)
+                displayPoseMarker()
             })
-            var robotMarker = new ROS2D.NavigationArrow({
-                size: 0.08,
-                strokeSize: 0.008,
-               // fillColor: createjs.Graphics.getRGB(255, 128, 0, 0.66),
-                pulse: true
-            })
-            poseTopic.subscribe(function(pose) {
-                robotMarker.x = pose.position.x,
-                robotMarker.y = -pose.position.y
-            })
+            function displayPoseMarker() {
+                var robotMarker = new ROS2D.NavigationArrow({
+                    size: 0.08,
+                    strokeSize: 0.008,
+                    pulse: true
+                 })
+                 robotMarker.visible = false
             
-            gridClient.rootObject.addChild(robotMarker)
+            //poseTopic.subscribe(function(pose) {
+                //robotMarker.x = pose.position.x,
+                //robotMarker.y = -pose.position.y
+            //})
+            
+                gridClient.rootObject.addChild(robotMarker)
+                var initScaleSet = false
+                var poseListener = new ROSLIB.Topic({
+                    ros : this.ros,
+                    name : '/robot_pose',
+                    messageType : 'geometry_msgs/Pose',
+                    throttle_rate : 100
+                  })
 
+                  poseListener.subscribe(function(pose){
+                    robotMarker.x = pose.position.x;
+                    robotMarker.y = -pose.position.y;
+                    console.log('Pose updated: ', robotMarker.x);
+                    if (!initScaleSet) {
+                      robotMarker.scaleX = 1.0 / viewer.scene.scaleX;
+                      robotMarker.scaleY = 1.0 / viewer.scene.scaleY;
+                      initScaleSet = true;
+                    }
+                    robotMarker.rotation = viewer.scene.rosQuaternionToGlobalTheta(pose.orientation);
+                    robotMarker.visible = true;
+                  })
+            }
 
         },
         disconnect: function() {
