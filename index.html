@@ -10,7 +10,6 @@
 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
-    <script src="https://unpkg.com/vue-long-click@0.0.4/dist/libs/vue-long-click.umd.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://static.robotwebtools.org/EaselJS/current/easeljs.min.js"></script>
     <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
@@ -61,7 +60,7 @@
 
             <!-- 2nd row -->
             <div class="col-md-6 text-center">
-                <button v-longclick="turnLeft" :disabled="loading || !connected" class="btn btn-primary">Location 1</button>
+                <button @click="turnLeft" :disabled="loading || !connected" class="btn btn-primary">Location 1</button>
             </div>
             <!-- -->
             <div class="col-md-4 text-center">
@@ -70,12 +69,12 @@
             </div>
             
             <div class="col-md-6 text-center">
-                <button v-longclick="turnRight" :disabled="loading || !connected" class="btn btn-primary">Location 2</button>
+                <button @click="turnRight" :disabled="loading || !connected" class="btn btn-primary">Location 2</button>
             </div>
 
             <!-- 3rd row -->
             <div class="col-md-12 text-center">
-                <button v-longclick="backward" :disabled="loading || !connected" class="btn btn-primary">Go backward</button>
+                <button @click="backward" :disabled="loading || !connected" class="btn btn-primary">Go backward</button>
             </div>
             <div class="col-md-4 text-center">
                 <button @click="send" :disabled="loading || !connected" class="btn btn-primary">send</button>

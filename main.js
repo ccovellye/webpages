@@ -1,5 +1,3 @@
-const longClickInstance = window['vue-long-click'].longClickDirective({delay: 400, interval: 50})
-Vue.directive('longclick', longClickInstance)
 
 var app = new Vue({
     el: '#app',
@@ -46,16 +44,16 @@ var app = new Vue({
                 name: '/robot_pose',
                 messageType: 'geometry_msgs/Pose'
             })
-            poseTopic.subscribe(function(message) {
+            poseTopic.subscribe(function(message3) {
                 console.log('In pose subscribe callback')
                 var now = new Date()
-                var position = 'x: ' + message.position.x
-                    + ', y: ' + message.position.y
+                var position = 'x: ' + message3.position.x
+                    + ', y: ' + message3.position.y
                     + ', z: 0.0'
-                var orientation = 'x: ' + message.orientation.x
-                    + ', y: ' + message.orientation.y
-                    + ', z: ' + message.orientation.z
-                    + ', w: ' + message.orientation.w
+                var orientation = 'x: ' + message3.orientation.x
+                    + ', y: ' + message3.orientation.y
+                    + ', z: ' + message3.orientation.z
+                    + ', w: ' + message3.orientation.w
                 })
            // poseTopic.subscribe(function(pose){
              //   console.log(pose)
@@ -73,7 +71,7 @@ var app = new Vue({
             gridClient.on('change', function() {
                 viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height)
                 viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y)
-                displayPoseMarker()
+                //displayPoseMarker()
             })
             function displayPoseMarker() {
                 var robotMarker = new ROS2D.NavigationArrow({
@@ -89,26 +87,17 @@ var app = new Vue({
             //})
             
                 gridClient.rootObject.addChild(robotMarker)
-                var initScaleSet = false
-                var poseListener = new ROSLIB.Topic({
+              
+                var statusListener = new ROSLIB.Topic({
                     ros : this.ros,
-                    name : '/robot_pose',
-                    messageType : 'geometry_msgs/Pose',
-                    throttle_rate : 100
-                  })
-
-                  poseListener.subscribe(function(pose){
-                    robotMarker.x = pose.position.x;
-                    robotMarker.y = -pose.position.y;
-                    console.log('Pose updated: ', robotMarker.x);
-                    if (!initScaleSet) {
-                      robotMarker.scaleX = 1.0 / viewer.scene.scaleX;
-                      robotMarker.scaleY = 1.0 / viewer.scene.scaleY;
-                      initScaleSet = true;
-                    }
-                    robotMarker.rotation = viewer.scene.rosQuaternionToGlobalTheta(pose.orientation);
-                    robotMarker.visible = true;
-                  })
+                    name : 'move_base/result',
+                    messageType : 'move_base__msgs/MoveBaseActionResult'
+                })
+                    console.log(statusListener)
+                statusListener.subscribe(function(actionResult){
+                   console.log('Received message on ' + statusListener.name + 'status: ' + actionResult.status.status);
+                   alert("in callback of /move_base/result")
+                 })
             }
 
         },
@@ -148,12 +137,7 @@ var app = new Vue({
             })
             this.setTopic2()
             this.topic2.publish(this.message2)
-            this.setTopic3()
-            topic3.subscribe(function(GoalStatusArray){
-                if (text = "Goal reached."){
-                   window.alert("El robot ha llegado a su destino. Por favor presione el botón Origin para regresarlo a su lugar.") 
-                }
-            })
+            
         },
         forward: function() {
             this.message = new ROSLIB.Message({
@@ -162,11 +146,6 @@ var app = new Vue({
             })
             this.setTopic()
             this.topic.publish(this.message)
-            this.topic3.subscribe(function(GoalStatusArray){
-                if (text = "Goal reached."){
-                   window.alert("El robot ha llegado a su destino. Por favor presione el botón Origin para regresarlo a su lugar.") 
-                }
-            })
         },
         stop: function() {
             this.message = new ROSLIB.Message({
