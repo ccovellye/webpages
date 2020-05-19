@@ -30,6 +30,20 @@ var app = new Vue({
                 this.logs.unshift((new Date()).toTimeString() + ' - Connected!')
                 this.connected = true
                 this.loading = false
+
+                var statusListener = new ROSLIB.Topic({
+                    ros : this.ros,
+                    name : 'move_base/result',
+                    messageType : 'move_base_msgs/MoveBaseActionResult'
+                })
+                    
+                statusListener.subscribe(function(actionResult){
+                    if (actionResult.status.status = 3) {
+                        alert("El robot ha llegado a su destino. Presione el boton Origin una vez haya recogido su entrega. Gracias")
+                    }
+                   //console.log('Received message on ' + statusListener.name + 'status: ' + actionResult.status.status)
+                   
+                 })
             })
             this.ros.on('error', (error) => {
                 this.logs.unshift((new Date()).toTimeString() + ` - Error: ${error}`)
@@ -89,17 +103,7 @@ var app = new Vue({
                 gridClient.rootObject.addChild(robotMarker)
             }
 
-            var statusListener = new ROSLIB.Topic({
-                ros : this.ros,
-                name : 'move_base/result',
-                messageType : 'move_base__msgs/MoveBaseActionResult'
-            })
-                console.log(statusListener)
-                
-            statusListener.subscribe(function(actionResult){
-               console.log('Received message on ' + statusListener.name + 'status: ' + actionResult.status.status);
-               alert("in callback of /move_base/result")
-             })
+            
 
         },
         disconnect: function() {
