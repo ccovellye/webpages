@@ -87,18 +87,19 @@ var app = new Vue({
             //})
             
                 gridClient.rootObject.addChild(robotMarker)
-              
-                var statusListener = new ROSLIB.Topic({
-                    ros : this.ros,
-                    name : 'move_base/result',
-                    messageType : 'move_base__msgs/MoveBaseActionResult'
-                })
-                    console.log(statusListener)
-                statusListener.subscribe(function(actionResult){
-                   console.log('Received message on ' + statusListener.name + 'status: ' + actionResult.status.status);
-                   alert("in callback of /move_base/result")
-                 })
             }
+
+            var statusListener = new ROSLIB.Topic({
+                ros : this.ros,
+                name : 'move_base/result',
+                messageType : 'move_base__msgs/MoveBaseActionResult'
+            })
+                console.log(statusListener)
+                
+            statusListener.subscribe(function(actionResult){
+               console.log('Received message on ' + statusListener.name + 'status: ' + actionResult.status.status);
+               alert("in callback of /move_base/result")
+             })
 
         },
         disconnect: function() {
