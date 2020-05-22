@@ -54,31 +54,23 @@
 
             <!-- 1st row -->
             <div class="col-md-12 text-center">
-                <button @click="forward" class="btn btn-primary" :disabled="loading || !connected" >forward</button>
+                <button @click="origin" class="btn btn-primary" :disabled="loading || !connected" >Origin</button>
                 <br><br>
             </div>
 
             <!-- 2nd row -->
-            <div class="col-md-6 text-center">
-                <button @click="turnLeft" :disabled="loading || !connected" class="btn btn-primary">Location 1</button>
-            </div>
-            <!-- -->
             <div class="col-md-4 text-center">
-                <button @click="stop" :disabled="loading || !connected" class="btn btn-danger">Stop</button>
+                <button @click="room1" :disabled="loading || !connected" class="btn btn-primary">Room 1</button>
+            </div>
+            <div class="col-md-4 text-center">
+                <button @click="room2" :disabled="loading || !connected" class="btn btn-danger">Room 2</button>
                 <br><br>
             </div>
             
-            <div class="col-md-6 text-center">
-                <button @click="turnRight" :disabled="loading || !connected" class="btn btn-primary">Location 2</button>
+            <div class="col-md-4 text-center">
+                <button @click="room3" :disabled="loading || !connected" class="btn btn-primary">Room 3</button>
             </div>
 
-            <!-- 3rd row -->
-            <div class="col-md-12 text-center">
-                <button @click="backward" :disabled="loading || !connected" class="btn btn-primary">Go backward</button>
-            </div>
-            <div class="col-md-4 text-center">
-                <button @click="send" :disabled="loading || !connected" class="btn btn-primary">send</button>
-            </div>
         </div>
   
         <div class="col-md-6 text-center" id="map" ></div>

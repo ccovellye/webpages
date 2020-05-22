@@ -5,7 +5,7 @@ var app = new Vue({
     data: {
         connected: false,
         ros: null,
-        ws_address: 'ws://192.168.0.12:9090',
+        ws_address: 'ws://172.20.10.3:9090',
         logs: [],
         loading: false,
         topic: null,
@@ -36,14 +36,38 @@ var app = new Vue({
                     name : 'move_base/result',
                     messageType : 'move_base_msgs/MoveBaseActionResult'
                 })
+                
+                var viewer = new ROS2D.Viewer({
+                    divID : 'map',
+                    width : 600,
+                    height : 600  
+                })
+                var gridClient = new ROS2D.OccupancyGridClient({
+                    ros: this.ros,
+                    rootObject: viewer.scene,
+                    continuous: true
+                })
+                gridClient.on('change', function() {
+                    viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height)
+                    viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y)
                     
+                })
+
                 statusListener.subscribe(function(actionResult){
                     if (actionResult.status.status = 3) {
-                        alert("El robot ha llegado a su destino. Presione el boton Origin una vez haya recogido su entrega. Gracias")
+                        window.alert("El robot ha llegado a su destino. Presione el boton Origin una vez haya recogido su entrega. Gracias")
                     }
-                   //console.log('Received message on ' + statusListener.name + 'status: ' + actionResult.status.status)
-                   
+                    robotMarker.x = actionResult.position.x,
+                    robotMarker.y = -actionResult.position.y
                  })
+
+                var robotMarker = new ROS2D.NavigationArrow({
+                    size: 0.08,
+                    strokeSize: 0.008,
+                    pulse: false
+                })
+
+                gridClient.rootObject.addChild(robotMarker)
             })
             this.ros.on('error', (error) => {
                 this.logs.unshift((new Date()).toTimeString() + ` - Error: ${error}`)
@@ -52,59 +76,7 @@ var app = new Vue({
                 this.logs.unshift((new Date()).toTimeString() + ' - Disconnected!')
                 this.connected = false
                 this.loading = false
-            })
-            var poseTopic = new ROSLIB.Topic({
-                ros: this.ros,
-                name: '/robot_pose',
-                messageType: 'geometry_msgs/Pose'
-            })
-            poseTopic.subscribe(function(message3) {
-                console.log('In pose subscribe callback')
-                var now = new Date()
-                var position = 'x: ' + message3.position.x
-                    + ', y: ' + message3.position.y
-                    + ', z: 0.0'
-                var orientation = 'x: ' + message3.orientation.x
-                    + ', y: ' + message3.orientation.y
-                    + ', z: ' + message3.orientation.z
-                    + ', w: ' + message3.orientation.w
-                })
-           // poseTopic.subscribe(function(pose){
-             //   console.log(pose)
-            //})
-            var viewer = new ROS2D.Viewer({
-                divID : 'map',
-                width : 600,
-                height : 600  
-            })
-            var gridClient = new ROS2D.OccupancyGridClient({
-                ros: this.ros,
-                rootObject: viewer.scene,
-                continuous: true
-            })
-            gridClient.on('change', function() {
-                viewer.scaleToDimensions(gridClient.currentGrid.width, gridClient.currentGrid.height)
-                viewer.shift(gridClient.currentGrid.pose.position.x, gridClient.currentGrid.pose.position.y)
-                //displayPoseMarker()
-            })
-            function displayPoseMarker() {
-                var robotMarker = new ROS2D.NavigationArrow({
-                    size: 0.08,
-                    strokeSize: 0.008,
-                    pulse: true
-                 })
-                 robotMarker.visible = false
-            
-            //poseTopic.subscribe(function(pose) {
-                //robotMarker.x = pose.position.x,
-                //robotMarker.y = -pose.position.y
-            //})
-            
-                gridClient.rootObject.addChild(robotMarker)
-            }
-
-            
-
+            })          
         },
         disconnect: function() {
             this.ros.close()
@@ -123,67 +95,59 @@ var app = new Vue({
                 messageType: 'geometry_msgs/PoseStamped'
             })
         },
-        setTopic3: function() {
-            this.topic3 = new ROSLIB.Topic({
-                ros: this.ros,
-                name: 'move_base/status',
-                messageType: 'actionlib_msgs/GoalStatusArray'
-            })
-        },
-        send: function() {
+        origin: function() {
             this.message2 = new ROSLIB.Message({
                 header: {
                     frame_id: 'map'
                 },
                 pose:{
-                    position: { x: 10, y: 1, z: 0 },
-                    orientation: { x: 0, y: 0, z: 0.5, w: 0.84 },
+                    position: { x: 0, y: 0, z: 0 },
+                    orientation: { x: 0, y: 0, z: 0, w: 0 },
                 }
             })
             this.setTopic2()
             this.topic2.publish(this.message2)
             
         },
-        forward: function() {
+        room1: function() {
             this.message = new ROSLIB.Message({
-                linear: { x: 0.2, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: 0, },
+                header: {
+                    frame_id: 'map'
+                },
+                pose:{
+                    position: { x: 0, y: 0, z: 0 },
+                    orientation: { x: 0, y: 0, z: 0, w: 0 },
+                }
             })
-            this.setTopic()
-            this.topic.publish(this.message)
+            this.setTopic2()
+            this.topic2.publish(this.message)
         },
-        stop: function() {
+        room2: function() {
             this.message = new ROSLIB.Message({
-                linear: { x: 0, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: 0, },
+                header: {
+                    frame_id: 'map'
+                },
+                pose:{
+                    position: { x: 0, y: 0, z: 0 },
+                    orientation: { x: 0, y: 0, z: 0, w: 0 },
+                }
             })
-            this.setTopic()
-            this.topic.publish(this.message)
+            this.setTopic2()
+            this.topic2.publish(this.message)
         },
-        backward: function() {
+        room3: function() {
             this.message = new ROSLIB.Message({
-                linear: { x: -0.2, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: 0, },
+                header: {
+                    frame_id: 'map'
+                },
+                pose:{
+                    position: { x: 0, y: 0, z: 0 },
+                    orientation: { x: 0, y: 0, z: 0, w: 0 },
+                }
             })
-            this.setTopic()
-            this.topic.publish(this.message)
-        },
-        turnLeft: function() {
-            this.message = new ROSLIB.Message({
-                linear: { x: 0, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: 0.35, },
-            })
-            this.setTopic()
-            this.topic.publish(this.message)
-        },
-        turnRight: function() {
-            this.message = new ROSLIB.Message({
-                linear: { x: 0, y: 0, z: 0, },
-                angular: { x: 0, y: 0, z: -0.35, },
-            })
-            this.setTopic()
-            this.topic.publish(this.message)
-        },
+            this.setTopic2()
+            this.topic2.publish(this.message)
+        }
     },
     mounted() {
     },
