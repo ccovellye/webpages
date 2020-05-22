@@ -5,7 +5,7 @@ var app = new Vue({
     data: {
         connected: false,
         ros: null,
-        ws_address: 'ws://172.20.10.3:9090',
+        ws_address: 'ws://192.168.1.9:9090',
         logs: [],
         loading: false,
         topic: null,
@@ -36,6 +36,12 @@ var app = new Vue({
                     name : 'move_base/result',
                     messageType : 'move_base_msgs/MoveBaseActionResult'
                 })
+
+                var goalListener = new ROSLIB.Topic({
+                    ros : this.ros,
+                    name : 'move_base/feedback',
+                    messageType : 'move_base_msgs/MoveBaseActionFeedback'
+                })
                 
                 var viewer = new ROS2D.Viewer({
                     divID : 'map',
@@ -53,18 +59,21 @@ var app = new Vue({
                     
                 })
 
+                goalListener.subscribe(function(MoveBaseActionFeedback){
+                    robotMarker.x = MoveBaseActionFeedback.feedback.base_position.pose.position.x
+                    robotMarker.y = -MoveBaseActionFeedback.feedback.base_position.pose.position.y
+                 })
+
                 statusListener.subscribe(function(actionResult){
-                    if (actionResult.status.status = 3) {
+                    if ((actionResult.status.status = 3) && (robotMarker.x != 0)) {
                         window.alert("El robot ha llegado a su destino. Presione el boton Origin una vez haya recogido su entrega. Gracias")
                     }
-                    robotMarker.x = actionResult.position.x,
-                    robotMarker.y = -actionResult.position.y
                  })
 
                 var robotMarker = new ROS2D.NavigationArrow({
-                    size: 0.08,
+                    size: 0.1,
                     strokeSize: 0.008,
-                    pulse: false
+                    pulse: true
                 })
 
                 gridClient.rootObject.addChild(robotMarker)
@@ -102,7 +111,7 @@ var app = new Vue({
                 },
                 pose:{
                     position: { x: 0, y: 0, z: 0 },
-                    orientation: { x: 0, y: 0, z: 0, w: 0 },
+                    orientation: { x: 0, y: 0, z: 0, w: 1 },
                 }
             })
             this.setTopic2()
@@ -129,7 +138,7 @@ var app = new Vue({
                 },
                 pose:{
                     position: { x: 0, y: 0, z: 0 },
-                    orientation: { x: 0, y: 0, z: 0, w: 0 },
+                    orientation: { x: 0, y: 0, z: 0, w: 1 },
                 }
             })
             this.setTopic2()
