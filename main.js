@@ -5,19 +5,11 @@ var app = new Vue({
     data: {
         connected: false,
         ros: null,
-        ws_address: 'ws://192.168.1.9:9090',
+        ws_address: 'ws://172.20.10.3:9090',
         logs: [],
         loading: false,
         topic: null,
-        topic2: null,
-        topic3: null,
-        message: null,
-        message2: null,
-        message3: null,
-        //viewer: null,
-        //gridClient: null,
-        //robotMarker: null,
-        //poseTopic: null
+        message: null
     },
     // helper methods to connect to ROS
     methods: {
@@ -65,13 +57,13 @@ var app = new Vue({
                  })
 
                 statusListener.subscribe(function(actionResult){
-                    if ((actionResult.status.status = 3) && (robotMarker.x != 0)) {
+                    if (actionResult.status.status = 3) {
                         window.alert("El robot ha llegado a su destino. Presione el boton Origin una vez haya recogido su entrega. Gracias")
                     }
                  })
 
                 var robotMarker = new ROS2D.NavigationArrow({
-                    size: 0.1,
+                    size: 0.15,
                     strokeSize: 0.008,
                     pulse: true
                 })
@@ -93,19 +85,12 @@ var app = new Vue({
         setTopic: function() {
             this.topic = new ROSLIB.Topic({
                 ros: this.ros,
-                name: '/cmd_vel',
-                messageType: 'geometry_msgs/Twist'
-            })
-        },
-        setTopic2: function() {
-            this.topic2 = new ROSLIB.Topic({
-                ros: this.ros,
                 name: '/move_base_simple/goal',
                 messageType: 'geometry_msgs/PoseStamped'
             })
         },
         origin: function() {
-            this.message2 = new ROSLIB.Message({
+            this.message = new ROSLIB.Message({
                 header: {
                     frame_id: 'map'
                 },
@@ -114,8 +99,8 @@ var app = new Vue({
                     orientation: { x: 0, y: 0, z: 0, w: 1 },
                 }
             })
-            this.setTopic2()
-            this.topic2.publish(this.message2)
+            this.setTopic()
+            this.topic.publish(this.message2)
             
         },
         room1: function() {
@@ -124,12 +109,12 @@ var app = new Vue({
                     frame_id: 'map'
                 },
                 pose:{
-                    position: { x: 0, y: 0, z: 0 },
-                    orientation: { x: 0, y: 0, z: 0, w: 0 },
+                    position: { x: 3.202, y: 0.818, z: 0 },
+                    orientation: { x: 0, y: 0, z: 0.479, w: 0.878}
                 }
             })
-            this.setTopic2()
-            this.topic2.publish(this.message)
+            this.setTopic()
+            this.topic.publish(this.message)
         },
         room2: function() {
             this.message = new ROSLIB.Message({
@@ -137,12 +122,12 @@ var app = new Vue({
                     frame_id: 'map'
                 },
                 pose:{
-                    position: { x: 0, y: 0, z: 0 },
-                    orientation: { x: 0, y: 0, z: 0, w: 1 },
+                    position: { x: 1.926, y: -0.456, z: 0 },
+                    orientation: { x: 0, y: 0, z: -0.566, w: 0.824}
                 }
             })
-            this.setTopic2()
-            this.topic2.publish(this.message)
+            this.setTopic()
+            this.topic.publish(this.message)
         },
         room3: function() {
             this.message = new ROSLIB.Message({
@@ -154,8 +139,8 @@ var app = new Vue({
                     orientation: { x: 0, y: 0, z: 0, w: 0 },
                 }
             })
-            this.setTopic2()
-            this.topic2.publish(this.message)
+            this.setTopic()
+            this.topic.publish(this.message)
         }
     },
     mounted() {
